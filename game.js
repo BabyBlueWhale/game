@@ -1,0 +1,238 @@
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+const scoreElement = document.getElementById('score');
+const timerElement = document.getElementById('timer');
+const leaderboardElement = document.getElementById('leaderboard');
+const leaderboardList = document.getElementById('leaderboardList');
+const collectSound = document.getElementById('collectSound');
+
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+let score = 0;
+let timeElapsed = 0;
+let player;
+let obstacles = [];
+let trashItems = [];
+let gameInterval;
+let timerInterval;
+let difficultyInterval;
+let isGameOver = false;
+let trashSpeed = 3;
+let obstacleSpeed = 2;
+
+const images = {
+    background: new Image(),
+    obstacle: new Image(),
+    trash: new Image(),
+    whale: new Image()
+};
+
+images.background.src = 'blue ocean.webp';
+images.obstacle.src = 'obstacle.png';
+images.trash.src = 'trash.png';
+images.whale.src = 'whale.png';
+
+class Player {
+    constructor() {
+        this.x = canvas.width / 2;
+        this.y = canvas.height - 100;
+        this.width = 50;
+        this.height = 50;
+        this.speed = 10;
+        this.dx = 0;
+        this.dy = 0;
+    }
+
+    draw() {
+        ctx.drawImage(images.whale, this.x, this.y, this.width, this.height);
+    }
+
+    update() {
+        this.x += this.dx;
+        this.y += this.dy;
+
+        if (this.x < 0) this.x = 0;
+        if (this.x + this.width > canvas.width) this.x = canvas.width - this.width;
+        if (this.y < 0) this.y = 0;
+        if (this.y + this.height > canvas.height) this.y = canvas.height - this.height;
+    }
+
+    move(dir) {
+        switch (dir) {
+            case 'ArrowUp':
+                this.dy = -this.speed;
+                break;
+            case 'ArrowDown':
+                this.dy = this.speed;
+                break;
+            case 'ArrowLeft':
+                this.dx = -this.speed;
+                break;
+            case 'ArrowRight':
+                this.dx = this.speed;
+                break;
+        }
+    }
+
+    stop() {
+        this.dx = 0;
+        this.dy = 0;
+    }
+}
+
+class Obstacle {
+    constructor(x, y) {
+        this.x = x;
+        this.y = y;
+        this.width = 50;
+        this.height = 50;
+        this.speed = obstacleSpeed;
+    }
+
+    draw() {
+        ctx.drawImage(images.obstacle, this.x, this.y, this.width, this.height);
+    }
+
+    update() {
+        this.y += this.speed;
+        if (this.y > canvas.height) {
+            this.y = -this.height;
+            this.x = Math.random() * (canvas.width - this.width);
+        }
+    }
+}
+
+class Trash {
+    constructor(x, y) {
+        this.x = x;
+        this.y = y;
+        this.width = 30;
+        this.height = 30;
+        this.speed = trashSpeed;
+    }
+
+    draw() {
+        ctx.drawImage(images.trash, this.x, this.y, this.width, this.height);
+    }
+
+    update() {
+        this.y += this.speed;
+        if (this.y > canvas.height) {
+            this.y = -this.height;
+            this.x = Math.random() * (canvas.width - this.width);
+        }
+    }
+}
+
+function startGame() {
+    isGameOver = false;
+    score = 0;
+    timeElapsed = 0;
+    trashSpeed = 3;
+    obstacleSpeed = 2;
+    scoreElement.textContent = `Score: ${score}`;
+    timerElement.textContent = `Time: ${timeElapsed}`;
+    leaderboardElement.style.display = 'none';
+    obstacles = [];
+    trashItems = [];
+    player = new Player();
+    for (let i = 0; i < 5; i++) {
+        obstacles.push(new Obstacle(Math.random() * canvas.width, Math.random() * canvas.height - canvas.height));
+        trashItems.push(new Trash(Math.random() * canvas.width, Math.random() * canvas.height - canvas.height));
+    }
+    gameInterval = setInterval(updateGame, 1000 / 60);
+    timerInterval = setInterval(updateTimer, 1000);
+    difficultyInterval = setInterval(increaseDifficulty, 30000);
+}
+
+function updateGame() {
+    if (isGameOver) return;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(images.background, 0, 0, canvas.width, canvas.height);
+    player.update();
+    player.draw();
+
+    obstacles.forEach(obstacle => {
+        obstacle.update();
+        obstacle.draw();
+        if (collision(player, obstacle)) {
+            endGame();
+        }
+    });
+
+    trashItems.forEach(trash => {
+        trash.update();
+        trash.draw();
+        if (collision(player, trash)) {
+            collectSound.play();
+            score++;
+            scoreElement.textContent = `Score: ${score}`;
+            trash.y = -trash.height;
+            trash.x = Math.random() * canvas.width;
+        }
+    });
+}
+
+function updateTimer() {
+    if (isGameOver) return;
+
+    timeElapsed++;
+    timerElement.textContent = `Time: ${timeElapsed}`;
+}
+
+function increaseDifficulty() {
+    if (isGameOver) return;
+
+    trashSpeed += 0.5;
+    obstacleSpeed += 0.5;
+
+    obstacles.forEach(obstacle => {
+        obstacle.speed = obstacleSpeed;
+    });
+
+    trashItems.forEach(trash => {
+        trash.speed = trashSpeed;
+    });
+}
+
+function collision(obj1, obj2) {
+    return obj1.x < obj2.x + obj2.width &&
+        obj1.x + obj1.width > obj2.x &&
+        obj1.y < obj2.y + obj2.height &&
+        obj1.y + obj1.height > obj2.y;
+}
+
+function endGame() {
+    clearInterval(gameInterval);
+    clearInterval(timerInterval);
+    clearInterval(difficultyInterval);
+    isGameOver = true;
+    saveScore(score, timeElapsed);
+    displayLeaderboard();
+}
+
+function saveScore(score, time) {
+    let leaderboard = JSON.parse(localStorage.getItem('leaderboard')) || [];
+    leaderboard.push({ score, time });
+    leaderboard.sort((a, b) => b.score - a.score || a.time - b.time);
+    leaderboard = leaderboard.slice(0, 10);
+    localStorage.setItem('leaderboard', JSON.stringify(leaderboard));
+}
+
+function displayLeaderboard() {
+    let leaderboard = JSON.parse(localStorage.getItem('leaderboard')) || [];
+    leaderboardList.innerHTML = '';
+    leaderboard.forEach((entry, index) => {
+        const li = document.createElement('li');
+        li.textContent = `#${index + 1}: ${entry.score} points in ${entry.time} seconds`;
+        leaderboardList.appendChild(li);
+    });
+    leaderboardElement.style.display = 'block';
+}
+
+window.addEventListener('keydown', e => player.move(e.key));
+window.addEventListener('keyup', () => player.stop());
+
+startGame();
