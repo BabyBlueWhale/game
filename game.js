@@ -170,7 +170,7 @@ function updateGame() {
     trashItems.forEach(trash => {
         trash.update();
         trash.draw();
-        if (collision(player, trash)) {
+        if (collisionTrash(player, trash)) {
             score++;
             scoreElement.textContent = `Score: ${score}`;
             trash.y = -trash.height;
@@ -214,6 +214,13 @@ function collision(obj1, obj2) {
     const requiredOverlapArea = obj1.width * obj1.height * 0.3; // 30% of the whale's area
 
     return overlapArea >= requiredOverlapArea;
+}
+
+function collisionTrash(obj1, obj2) {
+    return obj1.x < obj2.x + obj2.width &&
+           obj1.x + obj1.width > obj2.x &&
+           obj1.y < obj2.y + obj2.height &&
+           obj1.y + obj1.height > obj2.y;
 }
 
 function endGame() {
