@@ -36,8 +36,8 @@ class Player {
     constructor() {
         this.x = canvas.width / 2;
         this.y = canvas.height - 100;
-        this.width = 83; // 1.5 times smaller
-        this.height = 83; // 1.5 times smaller
+        this.width = 83;
+        this.height = 83;
         this.speed = 10;
         this.dx = 0;
         this.dy = 0;
@@ -88,8 +88,8 @@ class Obstacle {
     constructor(x, y) {
         this.x = x;
         this.y = y;
-        this.width = 100; // 1.5 times smaller
-        this.height = 100; // 1.5 times smaller
+        this.width = 100;
+        this.height = 100;
         this.speed = obstacleSpeed;
     }
 
@@ -110,8 +110,8 @@ class Trash {
     constructor(x, y) {
         this.x = x;
         this.y = y;
-        this.width = 40; // 1.5 times smaller
-        this.height = 40; // 1.5 times smaller
+        this.width = 40;
+        this.height = 40;
         this.speed = trashSpeed;
     }
 
@@ -170,7 +170,7 @@ function updateGame() {
     trashItems.forEach(trash => {
         trash.update();
         trash.draw();
-        if (collisionTrash(player, trash)) {
+        if (collision(player, trash)) {
             score++;
             scoreElement.textContent = `Score: ${score}`;
             trash.y = -trash.height;
@@ -208,15 +208,6 @@ function increaseDifficulty(fromTimer) {
 }
 
 function collision(obj1, obj2) {
-    const overlapX = Math.max(0, Math.min(obj1.x + obj1.width, obj2.x + obj2.width) - Math.max(obj1.x, obj2.x));
-    const overlapY = Math.max(0, Math.min(obj1.y + obj1.height, obj2.y + obj2.height) - Math.max(obj1.y, obj2.y));
-    const overlapArea = overlapX * overlapY;
-    const requiredOverlapArea = obj1.width * obj1.height * 0.3; // 30% of the whale's area
-
-    return overlapArea >= requiredOverlapArea;
-}
-
-function collisionTrash(obj1, obj2) {
     return obj1.x < obj2.x + obj2.width &&
            obj1.x + obj1.width > obj2.x &&
            obj1.y < obj2.y + obj2.height &&
