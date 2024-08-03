@@ -208,10 +208,13 @@ function increaseDifficulty(fromTimer) {
 }
 
 function collision(obj1, obj2) {
-    return obj1.x < obj2.x + obj2.width &&
-           obj1.x + obj1.width > obj2.x &&
-           obj1.y < obj2.y + obj2.height &&
-           obj1.y + obj1.height > obj2.y;
+    const xOverlap = Math.max(0, Math.min(obj1.x + obj1.width, obj2.x + obj2.width) - Math.max(obj1.x, obj2.x));
+    const yOverlap = Math.max(0, Math.min(obj1.y + obj1.height, obj2.y + obj2.height) - Math.max(obj1.y, obj2.y));
+    const overlapArea = xOverlap * yOverlap;
+    const obj1Area = obj1.width * obj1.height;
+    const obj2Area = obj2.width * obj2.height;
+
+    return (overlapArea / obj1Area > 0.3) && (overlapArea / obj2Area > 0.3);
 }
 
 function endGame() {
