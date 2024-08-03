@@ -4,7 +4,6 @@ const scoreElement = document.getElementById('score');
 const timerElement = document.getElementById('timer');
 const leaderboardElement = document.getElementById('leaderboard');
 const leaderboardList = document.getElementById('leaderboardList');
-const collectSound = document.getElementById('collectSound');
 
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
@@ -37,8 +36,8 @@ class Player {
     constructor() {
         this.x = canvas.width / 2;
         this.y = canvas.height - 100;
-        this.width = 50;
-        this.height = 50;
+        this.width = 125; // 2.5 times bigger
+        this.height = 125; // 2.5 times bigger
         this.speed = 10;
         this.dx = 0;
         this.dy = 0;
@@ -89,8 +88,8 @@ class Obstacle {
     constructor(x, y) {
         this.x = x;
         this.y = y;
-        this.width = 50;
-        this.height = 50;
+        this.width = 150; // Tripled the size
+        this.height = 150; // Tripled the size
         this.speed = obstacleSpeed;
     }
 
@@ -111,8 +110,8 @@ class Trash {
     constructor(x, y) {
         this.x = x;
         this.y = y;
-        this.width = 30;
-        this.height = 30;
+        this.width = 60; // Doubled the size
+        this.height = 60; // Doubled the size
         this.speed = trashSpeed;
     }
 
@@ -170,7 +169,6 @@ function updateGame() {
         trash.update();
         trash.draw();
         if (collision(player, trash)) {
-            collectSound.play();
             score++;
             scoreElement.textContent = `Score: ${score}`;
             trash.y = -trash.height;
@@ -202,10 +200,12 @@ function increaseDifficulty() {
 }
 
 function collision(obj1, obj2) {
-    return obj1.x < obj2.x + obj2.width &&
-        obj1.x + obj1.width > obj2.x &&
-        obj1.y < obj2.y + obj2.height &&
-        obj1.y + obj1.height > obj2.y;
+    const overlapX = obj1.width * 0.4;
+    const overlapY = obj1.height * 0.4;
+    return obj1.x + overlapX < obj2.x + obj2.width &&
+        obj1.x + obj1.width - overlapX > obj2.x &&
+        obj1.y + overlapY < obj2.y + obj2.height &&
+        obj1.y + obj1.height - overlapY > obj2.y;
 }
 
 function endGame() {
