@@ -22,13 +22,13 @@ let obstacleSpeed = 2;
 
 const images = {
     background: new Image(),
-    obstacle: new Image(),
+    octopus: new Image(),
     trash: new Image(),
     whale: new Image()
 };
 
 images.background.src = 'blue ocean.webp';
-images.obstacle.src = 'obstacle.png';
+images.octopus.src = 'octupus.png';
 images.trash.src = 'trash.png';
 images.whale.src = 'whale.png';
 
@@ -36,8 +36,8 @@ class Player {
     constructor() {
         this.x = canvas.width / 2;
         this.y = canvas.height - 100;
-        this.width = 125; // 2.5 times bigger
-        this.height = 125; // 2.5 times bigger
+        this.width = 83; // 1.5 times smaller
+        this.height = 83; // 1.5 times smaller
         this.speed = 10;
         this.dx = 0;
         this.dy = 0;
@@ -88,13 +88,13 @@ class Obstacle {
     constructor(x, y) {
         this.x = x;
         this.y = y;
-        this.width = 150; // Tripled the size
-        this.height = 150; // Tripled the size
+        this.width = 100; // 1.5 times smaller
+        this.height = 100; // 1.5 times smaller
         this.speed = obstacleSpeed;
     }
 
     draw() {
-        ctx.drawImage(images.obstacle, this.x, this.y, this.width, this.height);
+        ctx.drawImage(images.octopus, this.x, this.y, this.width, this.height);
     }
 
     update() {
@@ -110,8 +110,8 @@ class Trash {
     constructor(x, y) {
         this.x = x;
         this.y = y;
-        this.width = 60; // Doubled the size
-        this.height = 60; // Doubled the size
+        this.width = 40; // 1.5 times smaller
+        this.height = 40; // 1.5 times smaller
         this.speed = trashSpeed;
     }
 
@@ -146,7 +146,9 @@ function startGame() {
     }
     gameInterval = setInterval(updateGame, 1000 / 60);
     timerInterval = setInterval(updateTimer, 1000);
-    difficultyInterval = setInterval(increaseDifficulty, 30000);
+    difficultyInterval = setInterval(() => {
+        increaseDifficulty(true);
+    }, 15000); // Every 15 seconds
 }
 
 function updateGame() {
@@ -173,6 +175,10 @@ function updateGame() {
             scoreElement.textContent = `Score: ${score}`;
             trash.y = -trash.height;
             trash.x = Math.random() * canvas.width;
+
+            if (score % 10 === 0) {
+                increaseDifficulty(false); // Every 10 points
+            }
         }
     });
 }
@@ -184,28 +190,28 @@ function updateTimer() {
     timerElement.textContent = `Time: ${timeElapsed}`;
 }
 
-function increaseDifficulty() {
+function increaseDifficulty(fromTimer) {
     if (isGameOver) return;
 
-    trashSpeed += 0.5;
-    obstacleSpeed += 0.5;
+    if (fromTimer || score % 10 === 0) {
+        trashSpeed += 0.5;
+        obstacleSpeed += 0.5;
 
-    obstacles.forEach(obstacle => {
-        obstacle.speed = obstacleSpeed;
-    });
+        obstacles.forEach(obstacle => {
+            obstacle.speed = obstacleSpeed;
+        });
 
-    trashItems.forEach(trash => {
-        trash.speed = trashSpeed;
-    });
+        trashItems.forEach(trash => {
+            trash.speed = trashSpeed;
+        });
+    }
 }
 
 function collision(obj1, obj2) {
-    const overlapX = obj1.width * 0.4;
-    const overlapY = obj1.height * 0.4;
-    return obj1.x + overlapX < obj2.x + obj2.width &&
-        obj1.x + obj1.width - overlapX > obj2.x &&
-        obj1.y + overlapY < obj2.y + obj2.height &&
-        obj1.y + obj1.height - overlapY > obj2.y;
+    return obj1.x < obj2.x + obj2.width &&
+           obj1.x + obj1.width > obj2.x &&
+           obj1.y < obj2.y + obj2.height &&
+           obj1.y + obj1.height > obj2.y;
 }
 
 function endGame() {
