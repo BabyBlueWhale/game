@@ -208,13 +208,12 @@ function increaseDifficulty(fromTimer) {
 }
 
 function collision(obj1, obj2) {
-    const xOverlap = Math.max(0, Math.min(obj1.x + obj1.width, obj2.x + obj2.width) - Math.max(obj1.x, obj2.x));
-    const yOverlap = Math.max(0, Math.min(obj1.y + obj1.height, obj2.y + obj2.height) - Math.max(obj1.y, obj2.y));
-    const overlapArea = xOverlap * yOverlap;
-    const obj1Area = obj1.width * obj1.height;
-    const obj2Area = obj2.width * obj2.height;
+    const overlapX = Math.max(0, Math.min(obj1.x + obj1.width, obj2.x + obj2.width) - Math.max(obj1.x, obj2.x));
+    const overlapY = Math.max(0, Math.min(obj1.y + obj1.height, obj2.y + obj2.height) - Math.max(obj1.y, obj2.y));
+    const overlapArea = overlapX * overlapY;
+    const requiredOverlapArea = obj1.width * obj1.height * 0.3; // 30% of the whale's area
 
-    return (overlapArea / obj1Area > 0.3) && (overlapArea / obj2Area > 0.3);
+    return overlapArea >= requiredOverlapArea;
 }
 
 function endGame() {
