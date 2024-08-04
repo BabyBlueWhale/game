@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blue's Ocean Cleanup</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+            background: url('blue%20ocean.webp') no-repeat center center fixed;
+            background-size: cover;
+        }
+        #score, #timer {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            font-size: 24px;
+            color: white;
+        }
+        #timer {
+            left: auto;
+            right: 10px;
+        }
+        #leaderboard {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 24px;
+            color: white;
+            text-align: center;
+        }
+        canvas {
+            display: block;
+        }
+        button {
+            font-size: 24px;
+            padding: 10px 20px;
+            cursor: pointer;
+            margin: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div id="score">Score: 0</div>
+    <div id="timer">Time: 0</div>
+    <div id="leaderboard">
+        <h2>Leaderboard</h2>
+        <ol id="leaderboardList"></ol>
+        <button onclick="startGame()">Play Again</button>
+    </div>
+    <canvas id="gameCanvas"></canvas>
+    <audio id="collectSound" src="collect.mp3"></audio>
+    <img id="speedBoost" src="speed_boost.png" style="display:none;">
+    <img id="fishImage" src="fish.png" style="display:none;">
+    <img id="trashImage" src="trash.png" style="display:none;">
+    <img id="trashImage2" src="trash2.png" style="display:none;">
+    <script src="game.js"></script>
+</body>
+</html>
